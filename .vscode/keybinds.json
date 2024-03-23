@@ -1,0 +1,7 @@
+[
+    {
+        "key": "alt+l",
+        "command": "workbench.action.tasks.runTask",
+        "args" : "Vulkan launch"
+    }
+]

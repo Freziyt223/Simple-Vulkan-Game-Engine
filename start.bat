@@ -1,0 +1,1 @@
+gcc -v  -Wall Source/main.c -I "Libraries/GLFW/include" -I "Libraries/Vulkan/Include" -I "Libraries/cglm" -L"Libraries/GLFW/lib-mingw-w64" -L"Libraries/Vulkan/Lib" -lvulkan-1 -lglfw3 -lgdi32  -o Compiled/main.exe && "Compiled\main.exe"

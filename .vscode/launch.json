@@ -1,0 +1,17 @@
+{
+    "version" : "0.2.0",
+    "configurations": [
+        {
+            "name" : "Vulkan start",
+            "program": "${workspaceFolder}/Compiled/main.exe",
+            "type" : "cppdbg", 
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "request": "launch",
+            "cwd" :"${workspaceRoot}"
+        }
+    ]
+}
