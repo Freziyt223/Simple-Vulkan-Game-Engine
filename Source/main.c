@@ -1,92 +1,163 @@
-#include <stdio.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-#include <vulkan/vulkan.h>
+#include<stdbool.h>
+#include<stdlib.h>
+#include<process.h>
+#include<stdio.h>
+#include<signal.h>
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+//Даємо вказівку використовувати бібліотеки std, Vulkan і GLFW
 
-#define ERROROCCUR(ERROR, FORMAT, ...) {if(ERROR) { fprintf(stderr, "%s, at %s function, at %i line, with %i exit code:\n\t" FORMAT "\n", __FILE_NAME__, __FUNCTION__, __LINE__, ERROR, ##__VA_ARGS__); raise(SIGABRT);}}
-
-void glfwErrorCallback(int error_code, const char* description) {
-    ERROROCCUR(error_code, "GLFW: %s", description)
-}
-
-void exitCallback() {
+//Команда, яка викликається коли програма закривається
+void КличПриВиходіПрограми() {
+    //Завершення програми GLFW
     glfwTerminate();
-}
-
+};
+//Створений об'єкт Вікна, який має Заголовок, Ширина, Висота, параметри відображення, поверхню вікна і посилання на саме вікно програми
 typedef struct {
-    const char *Title;
-    int Width, Height;
-    bool Resizable;
-    bool Fullscreen;
-
-    uint32_t api_version;
-
-    GLFWmonitor *WindowMonitor;
-    GLFWwindow *window;
-
-    VkAllocationCallbacks *allocator;
-    VkInstance Instance;
-} State;
-
-
-void createWindow(State *WindowState) {
+    GLFWwindow *вікно;
+    const char *Заголовок;
+    int Ширина, Висота;
+    const char* РежимВідображення;
+    bool Збільшувальне;
+    VkSurfaceKHR ПоверхняЕкрану;
+} Вікно;
+//Створений об'єкт Програми, який має в собі дані про Версію вікна, Монітор, Розподілювач даних vulkan, екземпляр, дані про фізичний пристрій(що підтримує vulkan), дані про віртуальний пристрій
+typedef struct {
+    uint32_t Версія_VulkanApi;
+    GLFWmonitor *МоніторДляВікна;
+    VkAllocationCallbacks *Розподілювач;
+    VkInstance Екземпляр;
+    VkPhysicalDevice ФізичнийПристрій;
+    uint32_t ЗбіркаЧергиПроцесів;
+    VkDevice Прилад;
+    VkQueue ЧергаПроцесів;
+} Програма;
+//Об'єкт часу, для ініціалізації Кадрів і тіку гри
+typedef struct {
+    int Кадр1, Кадр2, КількістьКадрів, Тік;
+} Час; Час час;
+//Первинна ініціалізація, потребує вказання програми і вікна (Програма програма = {можливі дані...}, Вікно вікно ={можливі дані...}), для введення даних використовуйте таку структуру:
+//Програма програма = {} - введе дані про програму в окрему змінну; Вікно вікно = {} введе дані про вікно в окрему змінну; Ініціалізація(&програма, &вікно)
+void Ініціалізація(Програма *СтанПрограми, Вікно *СтанВікна) {
+    //Ініціалізуємо дані про програму, для подальшої обробки
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, WindowState->Resizable);
+    glfwWindowHint(GLFW_RESIZABLE, СтанВікна->Збільшувальне);
+    СтанВікна->вікно = glfwCreateWindow(СтанВікна->Ширина, СтанВікна->Висота, СтанВікна->Заголовок, СтанПрограми->МоніторДляВікна, NULL);
+    if(!СтанВікна->вікно) 
+    {
+        printf("%s", "Не можемо ініціалізувати Вікно");
+    };
 
-    if(WindowState->Fullscreen) {
-        WindowState->WindowMonitor = glfwGetPrimaryMonitor();
+
+    //Далі іде створення Екземпляру
+
+    uint32_t КількістьРозширень;
+    const char **НеобхідніДоповнення = glfwGetRequiredInstanceExtensions(&КількістьРозширень); 
+    //glfwGetRequiredInstanceExtensions бере аргумент, в який він виведе кількість доповнень, і виводить в змінну назви розширень
+    VkApplicationInfo ІнформаціяПроПрограму = {
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .apiVersion = СтанПрограми->Версія_VulkanApi
+    };
+    VkInstanceCreateInfo СтворенняІнформації = {
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pApplicationInfo = &ІнформаціяПроПрограму,
+        .enabledExtensionCount = КількістьРозширень,
+        .ppEnabledExtensionNames = НеобхідніДоповнення,
+    };
+    VkResult РезультатЕкземпляра = vkCreateInstance(&СтворенняІнформації, СтанПрограми->Розподілювач, &СтанПрограми->Екземпляр);
+    if(РезультатЕкземпляра != VK_SUCCESS) 
+    {
+        printf("%s", "Не є можливим створити екземпляр\n");
     }
 
-    WindowState->window = glfwCreateWindow(WindowState->Width, WindowState->Height, WindowState->Title, WindowState->WindowMonitor, NULL);
-}
-void createInstance(State *WindowState) {
-    uint32_t extension_count;
-    const char **RequiredExtensions = glfwGetRequiredInstanceExtensions(&extension_count);
-    VkApplicationInfo ApplicationInfo = {
-        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .apiVersion = WindowState -> api_version,
-    };
-    VkInstanceCreateInfo CreateInfo = {
-        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pApplicationInfo = &ApplicationInfo,
-        .enabledExtensionCount = extension_count,
-        .ppEnabledExtensionNames = RequiredExtensions,
-    };
-    ERROROCCUR(vkCreateInstance(&CreateInfo, WindowState -> allocator, &WindowState -> Instance), "Couldn't create an instance");
+
+    //Далі іде обирання Пристрою
+
+    uint32_t КількістьПристроїв;
+    vkEnumeratePhysicalDevices(СтанПрограми->Екземпляр, &КількістьПристроїв, NULL); //виведе кількість доступних фізичних пристроїв виводу
+    if(КількістьПристроїв == 0) 
+    {
+        printf("%s", "Не було знайдено доступних пристроїв, що підтримують Vulkan");
+    }
+    vkEnumeratePhysicalDevices(СтанПрограми->Екземпляр, &КількістьПристроїв, &СтанПрограми->ФізичнийПристрій);
+    VkResult РезультатПоверхні = glfwCreateWindowSurface(СтанПрограми->Екземпляр, СтанВікна->вікно, СтанПрограми->Розподілювач, &СтанВікна->ПоверхняЕкрану);
+    if(РезультатПоверхні != VK_SUCCESS) 
+    {
+        printf("%s", "Не є можливим створити поверхню\n");
+    }
+    СтанПрограми->ЗбіркаЧергиПроцесів = -1;
+    uint32_t КількістьЧерг;
+    vkGetPhysicalDeviceQueueFamilyProperties(СтанПрограми->ФізичнийПристрій, &КількістьЧерг, NULL);
+    VkQueueFamilyProperties *Черги = malloc(КількістьЧерг * sizeof(VkQueueFamilyProperties));
+    if(Черги == NULL)
+    {
+        printf("%s", "Не можливо присвоїти частину пам'яті для пристрою");
+    }
+   vkGetPhysicalDeviceQueueFamilyProperties(СтанПрограми->ФізичнийПристрій, &КількістьЧерг, Черги);
+   for(int ІндексЧерг = 0; ІндексЧерг < КількістьЧерг; ++ІндексЧерг) {
+    VkQueueFamilyProperties Характеристики = Черги[ІндексЧерг];
+    if(Характеристики.queueFlags & VK_QUEUE_GRAPHICS_BIT && glfwGetPhysicalDevicePresentationSupport(СтанПрограми->Екземпляр, СтанПрограми->ФізичнийПристрій, ІндексЧерг)) 
+    {
+        СтанПрограми->ЗбіркаЧергиПроцесів = ІндексЧерг;
+        break;
+    }
+   }
+   if(СтанПрограми->ЗбіркаЧергиПроцесів == -1)
+   {
+        printf("%s", "Не можливо знайти підходящу ЧергуПроцесів");
+   }
+
+
+    //Далі іде код для створення пристробю обробки графічної інформації
+    vkCreateDevice(СтанПрограми->ФізичнийПристрій, &(VkDeviceCreateInfo) {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .pQueueCreateInfos = &(VkDeviceQueueCreateInfo) {
+            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .queueFamilyIndex = СтанПрограми->ЗбіркаЧергиПроцесів,
+            .pQueuePriorities = &(float){1.0}
+        },
+        .queueCreateInfoCount = 1,
+        .enabledExtensionCount = 1,
+        .ppEnabledExtensionNames = &(const char *){VK_KHR_SWAPCHAIN_EXTENSION_NAME}
+    }, 
+    СтанПрограми->Розподілювач, &СтанПрограми->Прилад);
+    vkGetDeviceQueue(СтанПрограми->Прилад, СтанПрограми->ЗбіркаЧергиПроцесів, 0, &СтанПрограми->ЧергаПроцесів);
 };
-void init(State *WindowState) {
-    createWindow(WindowState);
-}
 
-void loop(State *WindowState) {
-    while(!glfwWindowShouldClose(WindowState->window)) {
-        glfwPollEvents();
-    }
-}
-
-void cleanup(State *WindowState) {
-    glfwDestroyWindow(WindowState->window);
-    vkDestroyInstance(WindowState->Instance, WindowState->allocator);
-}
-
-int main() {
-    State Window = {
-        .Title = "Привіт Світ",
-        .Width = 720,
-        .Height = 480,
-        .Resizable = false,
-        .Fullscreen = false,
-        .api_version = VK_API_VERSION_1_3,
+//Отримання даних в режимі реального часу
+void ОновленняПрограми(Вікно *СтанВікна) {
+    glfwPollEvents();
+};
+//Відображення/збереження графічної інформації
+void Відображення(Програма *СтанПрограми, Вікно *СтанВікна) {
+    Ініціалізація(СтанПрограми, СтанВікна);
+    while(!glfwWindowShouldClose(СтанВікна->вікно)) {
+        ОновленняПрограми(СтанВікна);
     };
-    glfwSetErrorCallback(glfwErrorCallback);
-    atexit(exitCallback);
-    init(&Window);
-    loop(&Window);
-    cleanup(&Window);
+};
+//Завершення роботи, якщо немає інформації для опрацювання/програма закривається
+void ЗавершенняРоботи(Програма *СтанПрограми, Вікно *СтанВікна) {
+    vkDestroyDevice(СтанПрограми->Прилад, СтанПрограми->Розподілювач);
+    vkDestroySurfaceKHR(СтанПрограми->Екземпляр, СтанВікна->ПоверхняЕкрану, СтанПрограми->Розподілювач);
+    vkDestroyInstance(СтанПрограми->Екземпляр, СтанПрограми->Розподілювач);
+};
+//Основна функція(мова програмування C потребує наявності такої функції), в яку ми поміщаємо усі наші дані, які мають оброблюватись.
+int main()
+{
+    //Створюємо вікно
+    Вікно вікно = {
+        .Заголовок = "Ігровий Двигун Вулкан",
+        .Ширина = 1260,
+        .Висота = 720
+    };
+    //Даємо інформацію про програму
+    Програма програма = {
+        .Версія_VulkanApi = VK_API_VERSION_1_3
+    };
+    atexit(&КличПриВиходіПрограми); //Якщо програма закривається, то виконаєтсья закриття glfw
+    Відображення(&програма, &вікно);// відображення графічної інформації
+    ЗавершенняРоботи(&програма, &вікно);//Якщо немає даних про графічну інформацію, то закрити програму
 
-    return EXIT_SUCCESS;
+    return EXIT_SUCCESS;//якщо минулі функції пройшли і закрились успішно, то дати сигнал про успінше завершення роботи
 };

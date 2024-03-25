@@ -7,7 +7,8 @@
     "C_Cpp.default.includePath": [
         "${workspaceFolder}\\Source",
         "${workspaceFolder}\\Libraries\\GLFW\\include",
-        "${workspaceFolder}\\Libraries\\Vulkan\\Include"
+        "${workspaceFolder}\\Libraries\\Vulkan\\Include",
+        "${workspaceFolder}\\Libraries\\CGLM"
     ],
     "C_Cpp.default.compilerPath": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
 }
