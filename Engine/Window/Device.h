@@ -1,19 +1,24 @@
 #pragma once
 #include "../Program.h"
+//Error Handle definition is in Program.h
+
 
 struct ErrorHandle SelectPhysicalDevice(Program *ProgramState) {
     uint32_t DeviceNumber;
     VkResult EnumerateResult = vkEnumeratePhysicalDevices(ProgramState->initialize.Instance, &DeviceNumber, NULL);
 
-    if(EnumerateResult != VK_SUCCESS) {Error("Couldn't enumerate physical devices", EnumerateResult);}
+    if(EnumerateResult != VK_SUCCESS) 
+    {Error("Couldn't enumerate physical devices", EnumerateResult);}
 
-    if(DeviceNumber == 0) {Error("Couldn't find a vulkan supporting device", 1); exit(1);}
+    if(DeviceNumber == 0) 
+    {Error("Couldn't find a vulkan supporting device", 1); exit(1);}
 
     VkResult SelectingResult = vkEnumeratePhysicalDevices(ProgramState->initialize.Instance, &DeviceNumber, &ProgramState->initialize.PhysicalDevice);
 
-    if(SelectingResult != VK_SUCCESS) {Error("Couldn't select physical devices", SelectingResult);}
+    if(SelectingResult != VK_SUCCESS || SelectingResult != VK_INCOMPLETE) 
+    {Error("Couldn't select physical devices", SelectingResult);}
 
-    return (struct ErrorHandle){"Selected PhysicalDevice successfully"};
+    return (struct ErrorHandle){"Success"};
 };
 struct ErrorHandle SelectQueueFamily(Program *ProgramState) {
     ProgramState->initialize.QueueFamily_index = UINT32_MAX;
@@ -23,7 +28,8 @@ struct ErrorHandle SelectQueueFamily(Program *ProgramState) {
 
     VkQueueFamilyProperties *QueueFamilyProperties = malloc(FamilyNumber * sizeof(VkQueueFamilyProperties));
 
-    if(QueueFamilyProperties == NULL) {Error("Couldn't allocate memory to an queue families", 1);}
+    if(QueueFamilyProperties == NULL) 
+    {Error("Couldn't allocate memory to an queue families", 1);}
 
     vkGetPhysicalDeviceQueueFamilyProperties(ProgramState->initialize.PhysicalDevice, &FamilyNumber, QueueFamilyProperties);
 
@@ -37,9 +43,12 @@ struct ErrorHandle SelectQueueFamily(Program *ProgramState) {
         }
     }
 
-    if(ProgramState->initialize.QueueFamily_index == UINT32_MAX) {Error("Couldn't find suitable queue family", 2);}
+    if(ProgramState->initialize.QueueFamily_index == UINT32_MAX) 
+    {Error("Couldn't find suitable queue family", 2);}
+
     free(QueueFamilyProperties);
-    return (struct ErrorHandle){"Successfully selected device queue family"};
+
+    return (struct ErrorHandle){"Success"};
 };
 
 struct ErrorHandle CreateDevice(Program *ProgramState) {
@@ -62,17 +71,21 @@ struct ErrorHandle CreateDevice(Program *ProgramState) {
         },
         ProgramState->Allocator, &ProgramState->initialize.Device
         );
-    if(Result != VK_SUCCESS) {Error("Couldn't create device", Result);}
-    return (struct ErrorHandle){"Successfully created device"};
+    if(Result != VK_SUCCESS) 
+    {Error("Couldn't create device", Result);}
+
+    return (struct ErrorHandle){"Success"};
 };
 
 void GetQueue(Program *ProgramState) {
     vkGetDeviceQueue(ProgramState->initialize.Device, ProgramState->initialize.QueueFamily_index, 0, &ProgramState->initialize.Queue);
 };
+// Countainer for all Device functions
 struct ErrorHandle DeviceConfigurate(Program *ProgramState) {
     SelectPhysicalDevice(ProgramState);
     SelectQueueFamily(ProgramState);
     CreateDevice(ProgramState);
     GetQueue(ProgramState);
-    return (struct ErrorHandle){"Successfully Configurated device"};
+
+    return (struct ErrorHandle){"Success"};
 };

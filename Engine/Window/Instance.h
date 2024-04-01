@@ -1,5 +1,6 @@
 #pragma once
 #include "../Program.h"
+//Error Handle definition is in Program.h
 
 struct ErrorHandle CreateInstance(Program *ProgramState) {
     uint32_t ExtensionsNumber;
@@ -20,6 +21,7 @@ struct ErrorHandle CreateInstance(Program *ProgramState) {
         },
         ProgramState->Allocator, 
         &ProgramState->initialize.Instance);
-    if(Result != VK_SUCCESS) {Error("Failed to Create Instance", Result);}
-    return (struct ErrorHandle){"Created Instance Successfully"};
+    if(Result != VK_SUCCESS) 
+    {Error("Failed to Create Instance", Result);}
+    return (struct ErrorHandle){"Success"};
 };

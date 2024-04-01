@@ -4,7 +4,8 @@
         "glfw3.h": "c",
         "stdio.h": "c",
         "signal.h": "c",
-        "include.h": "c"
+        "include.h": "c",
+        "format": "cpp"
     },
     "C_Cpp.default.includePath": [
         "${workspaceFolder}\\Source",

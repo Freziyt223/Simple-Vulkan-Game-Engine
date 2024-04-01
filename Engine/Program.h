@@ -1,9 +1,28 @@
 #pragma once
 #include "Include.h"
 typedef struct {
+    VkSwapchainKHR Handle;
+
+    uint32_t ImageNumber;
+    VkImage *Images;
+    VkImageView *ImageViews;
+    uint32_t Buffering;
+} Swapchain;
+typedef struct {
+
+    Swapchain swapchain;
+
     GLFWwindow *Handle;
     const char *Title;
     int Width, Height;
+    bool Resizeable;
+    uint8_t ScreenMode;
+    VkSurfaceKHR Surface;
+    VkSurfaceCapabilitiesKHR SurfaceCapabilities;
+    VkSurfaceFormatKHR SurfaceFormat;
+    VkPresentModeKHR PresentMode;
+
+    int FrameBufferWidth, FrameBufferHeight;
 } Window;
 typedef struct {
     VkInstance Instance;
@@ -21,10 +40,12 @@ typedef struct {
     const char *EngineName;
     VkAllocationCallbacks *Allocator;
 } Program;
+//Gets parameters of error Reason(const char *) and Error Code(int)
 struct ErrorHandle {
     const char *Reason;
     int Code;
 };
+//Function, that prints error details, returns error data and exits the program. Usage: if there is error possibility, do the state check(using if function) and then "Error("Description of possible error", code(must be an int value))"
 struct ErrorHandle Error(const char *Reason, int Code) {
     printf("Error occur: %s, exited with code: %i \n", Reason, Code);
     struct ErrorHandle Return = {
@@ -34,3 +55,11 @@ struct ErrorHandle Error(const char *Reason, int Code) {
     return Return;
     exit(1);
 };
+uint32_t clamp(uint32_t value, uint32_t min, uint32_t max) {
+    if(value < min) {
+        return min;
+    } else if(value > max) {
+        return max;
+    }
+    return value;
+}
