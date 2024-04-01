@@ -1,1 +1,1 @@
-chcp 65001 && gcc  -Wall Source/main.c -I "Source" -I "Source/Headers" -I "Libraries/GLFW/include" -I "Libraries/Vulkan/Include" -I "Libraries/CGLM" -L"Libraries/GLFW/lib-mingw-w64" -L"Libraries/Vulkan/Lib" -lvulkan-1 -lglfw3 -lgdi32  -o Compiled/main.exe && "Compiled\main.exe"
+chcp 65001 && gcc  -Wall "Engine/Engine.c" -I"Engine" -I "Libraries/GLFW/include" -I "Libraries/Vulkan/Include" -I "Libraries/CGLM" -L"Libraries/GLFW/lib-mingw-w64" -L"Libraries/Vulkan/Lib" -lvulkan-1 -lglfw3 -lgdi32  -o Compiled/main.exe && "Compiled\main.exe"
