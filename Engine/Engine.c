@@ -46,10 +46,10 @@ int main()
     Program program = {
         .window = {
             .Title = "Vulkan Engine",
-            .Width = 1260,
+            .Width = 1280,
             .Height = 720,
             .swapchain = {
-                .Buffering = 3
+                .Buffering = 2,
             }
         },
         .ApiVersion = VK_API_VERSION_1_3

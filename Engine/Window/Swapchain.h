@@ -64,7 +64,7 @@ struct ErrorHandle CreateSwapChain(Program *ProgramState) {
             .pQueueFamilyIndices = &ProgramState->initialize.QueueFamily_index,
             .preTransform = ProgramState->window.SurfaceCapabilities.currentTransform,
             .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-            .presentMode = ProgramState->window.PresentMode,
+            .presentMode = VK_PRESENT_MODE_FIFO_KHR,
             .clipped = true,
            
         },

@@ -78,3 +78,10 @@ struct ErrorHandle surfacePresentModesSelect(Program *ProgramState) {
     free(presentModes);
     return (struct ErrorHandle){"Success"};
 };
+
+struct ErrorHandle SurfaceConfigurate(Program *ProgramState) {
+    GetSurfaceCapabilities(ProgramState);
+    surfaceFormatsSelect(ProgramState);
+    surfacePresentModesSelect(ProgramState);
+    return (struct ErrorHandle){"Success"};
+};

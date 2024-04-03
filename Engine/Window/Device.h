@@ -15,7 +15,7 @@ struct ErrorHandle SelectPhysicalDevice(Program *ProgramState) {
 
     VkResult SelectingResult = vkEnumeratePhysicalDevices(ProgramState->initialize.Instance, &DeviceNumber, &ProgramState->initialize.PhysicalDevice);
 
-    if(SelectingResult != VK_SUCCESS || SelectingResult != VK_INCOMPLETE) 
+    if(SelectingResult != VK_SUCCESS) 
     {Error("Couldn't select physical devices", SelectingResult);}
 
     return (struct ErrorHandle){"Success"};
