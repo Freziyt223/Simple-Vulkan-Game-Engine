@@ -1,12 +1,17 @@
 #include "Window/Window.h"
+#include "Render/GraphicsPipeline.h"
+#include "Render/Shader.h"
 //if exit, destroy glfw components
 void ExitHandle() {
     glfwTerminate();
 };
 //Configurate and initialize window and it's parameters
-void InitializeProgram(Program *ProgramState) {
+void InitializeProgram(Program *ProgramState) {    
     glfwInit();
     WindowCreate(ProgramState);
+    size_t ShaderVertSize = sizeof(ShaderVert);
+    size_t ShaderFragSize = sizeof(ShaderFrag);
+    InitializeGraphicsPipeline(ProgramState, ShaderVert, ShaderVertSize, ShaderFrag, ShaderFragSize);
 };
 //Get updated data about program
 void UpdateProgram(Program *ProgramState) {
@@ -16,11 +21,18 @@ void UpdateProgram(Program *ProgramState) {
 };
 //Clean program and memory
 void TerminateFunctions(Program *ProgramState) {
+
+    vkDestroyPipeline(ProgramState->initialize.Device, GraphicsPipeline.GraphicsPipeline, ProgramState->Allocator);
+    vkDestroyPipelineLayout(ProgramState->initialize.Device, GraphicsPipeline.PipelineLayout, ProgramState->Allocator);
+    vkDestroyRenderPass(ProgramState->initialize.Device, GraphicsPipeline.RenderPass, ProgramState->Allocator);
+    
     for (int i = 0; i < ProgramState->window.swapchain.ImageNumber; ++i) {
         vkDestroyImageView(ProgramState->initialize.Device, ProgramState->window.swapchain.ImageViews[i], ProgramState->Allocator);
     }
     free(ProgramState->window.swapchain.ImageViews);
+    ProgramState->window.swapchain.ImageViews = NULL;
     free(ProgramState->window.swapchain.Images);
+    ProgramState->window.swapchain.Images = NULL;
 
     vkDestroySwapchainKHR(ProgramState->initialize.Device, ProgramState->window.swapchain.Handle, ProgramState->Allocator);
     vkDestroySurfaceKHR(ProgramState->initialize.Instance, ProgramState->window.Surface, ProgramState->Allocator);
@@ -54,6 +66,7 @@ int main()
         },
         .ApiVersion = VK_API_VERSION_1_3
     };
+    glfwSetErrorCallback(ErrorCheck);
     Log();
     //Configurate and make a window,
     InitializeProgram(&program);

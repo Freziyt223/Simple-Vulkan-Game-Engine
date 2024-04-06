@@ -1,5 +1,13 @@
 #pragma once
 #include "Include.h"
+#ifdef NDEBUG
+    const bool enableValidationLayers = false;
+#else
+    const bool enableValidationLayers = true;
+#endif
+
+const char *ValidationLayers[] = {"VK_LAYER_KHRONOS_validation"};
+
 typedef struct {
     VkSwapchainKHR Handle;
 
@@ -7,6 +15,8 @@ typedef struct {
     VkImage *Images;
     VkImageView *ImageViews;
     uint32_t Buffering;
+
+    VkFramebuffer FrameBuffers;
 } Swapchain;
 typedef struct {
 
@@ -55,6 +65,9 @@ struct ErrorHandle Error(const char *Reason, int Code) {
     return Return;
     exit(1);
 };
+void ErrorCheck(int Code, const char *Reason) {
+    fprintf(stderr, "GLFW Error: %d, %s\n", Code, Reason);
+};
 uint32_t clamp(uint32_t value, uint32_t min, uint32_t max) {
     if(value < min) {
         return min;
@@ -63,3 +76,8 @@ uint32_t clamp(uint32_t value, uint32_t min, uint32_t max) {
     }
     return value;
 }
+struct Pipeline {
+    VkPipelineLayout PipelineLayout;
+    VkRenderPass RenderPass;
+    VkPipeline GraphicsPipeline;
+} GraphicsPipeline;

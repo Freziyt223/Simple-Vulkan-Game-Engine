@@ -14,7 +14,7 @@ void swapchainImagesGet(Program *ProgramState) {
 
     if(Result != VK_SUCCESS)
     {Error("Failed to use swapchain images", Result);}
-
+    //Free'd in Engine.c Terminate function
 };
 
 void swapchainImageViewsCreate(Program *ProgramState) {

@@ -18,6 +18,8 @@ struct ErrorHandle CreateInstance(Program *ProgramState) {
             },
             .enabledExtensionCount = ExtensionsNumber,
             .ppEnabledExtensionNames = RequiredExtensions,
+            .enabledLayerCount = 1,
+            .ppEnabledLayerNames = ValidationLayers,
         },
         ProgramState->Allocator, 
         &ProgramState->initialize.Instance);

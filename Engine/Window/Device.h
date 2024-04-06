@@ -47,7 +47,7 @@ struct ErrorHandle SelectQueueFamily(Program *ProgramState) {
     {Error("Couldn't find suitable queue family", 2);}
 
     free(QueueFamilyProperties);
-
+    QueueFamilyProperties = NULL;
     return (struct ErrorHandle){"Success"};
 };
 
