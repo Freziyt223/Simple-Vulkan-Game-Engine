@@ -1,12 +1,6 @@
 #pragma once
 #include "Include.h"
-#ifdef NDEBUG
-    const bool enableValidationLayers = false;
-#else
-    const bool enableValidationLayers = true;
-#endif
 
-const char *ValidationLayers[] = {"VK_LAYER_KHRONOS_validation"};
 
 typedef struct {
     VkSwapchainKHR Handle;
@@ -50,6 +44,12 @@ typedef struct {
     const char *EngineName;
     VkAllocationCallbacks *Allocator;
 } Program;
+struct Pipeline {
+    VkPipelineLayout PipelineLayout;
+    VkRenderPass RenderPass;
+    VkPipeline GraphicsPipeline;
+    VkFramebuffer* FrameBuffer;
+} GraphicsPipeline;
 //Gets parameters of error Reason(const char *) and Error Code(int)
 struct ErrorHandle {
     const char *Reason;
@@ -57,7 +57,7 @@ struct ErrorHandle {
 };
 //Function, that prints error details, returns error data and exits the program. Usage: if there is error possibility, do the state check(using if function) and then "Error("Description of possible error", code(must be an int value))"
 struct ErrorHandle Error(const char *Reason, int Code) {
-    printf("Error occur: %s, exited with code: %i \n", Reason, Code);
+    fprintf(stderr, "Error occur: %s, exited with code: %i \n", Reason, Code);
     struct ErrorHandle Return = {
         .Reason = Reason,
         .Code = Code,
@@ -76,8 +76,3 @@ uint32_t clamp(uint32_t value, uint32_t min, uint32_t max) {
     }
     return value;
 }
-struct Pipeline {
-    VkPipelineLayout PipelineLayout;
-    VkRenderPass RenderPass;
-    VkPipeline GraphicsPipeline;
-} GraphicsPipeline;

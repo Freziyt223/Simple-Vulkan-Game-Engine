@@ -1,6 +1,11 @@
 #include "Window/Window.h"
-#include "Render/GraphicsPipeline.h"
-#include "Render/Shader.h"
+#include "Pipeline/GraphicsPipeline.h"
+#include "Pipeline/Shader.h"
+#ifdef NDEBUG
+    const bool enableValidationLayers = false;
+#else
+    const bool enableValidationLayers = true;
+#endif
 //if exit, destroy glfw components
 void ExitHandle() {
     glfwTerminate();
@@ -61,7 +66,7 @@ int main()
             .Width = 1280,
             .Height = 720,
             .swapchain = {
-                .Buffering = 2,
+                .Buffering = 3,
             }
         },
         .ApiVersion = VK_API_VERSION_1_3

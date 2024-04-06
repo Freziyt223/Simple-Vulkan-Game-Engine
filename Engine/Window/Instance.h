@@ -1,8 +1,34 @@
 #pragma once
 #include "../Program.h"
-//Error Handle definition is in Program.h
+struct ValidationLayer {
+        uint32_t LayersNumber;
+        const char *LayerNames[];
+} validationLayer;
 
+//Error Handle definition is in Program.h
+struct ErrorHandle CheckValidationLayerSupport() {
+    vkEnumerateInstanceLayerProperties(&validationLayer.LayersNumber, NULL);
+
+    if(validationLayer.LayersNumber == 0)
+    {Error("No valid layers available", -1);}
+
+    VkLayerProperties *AvailableLayers = (VkLayerProperties *)malloc(validationLayer.LayersNumber * sizeof(VkLayerProperties));
+    
+    if(!AvailableLayers)
+    {Error("Failed to allocate memory for validation layers", 1);}
+
+    vkEnumerateInstanceLayerProperties(&validationLayer.LayersNumber, AvailableLayers);
+
+    for(int i = 0; i < validationLayer.LayersNumber; ++i)
+    {validationLayer.LayerNames[i] = AvailableLayers[i].layerName;}
+
+    free(AvailableLayers);
+    AvailableLayers = NULL;
+    
+    return (struct ErrorHandle){"Success"};
+};
 struct ErrorHandle CreateInstance(Program *ProgramState) {
+
     uint32_t ExtensionsNumber;
     const char **RequiredExtensions = glfwGetRequiredInstanceExtensions(&ExtensionsNumber);
     VkResult Result = vkCreateInstance(
@@ -18,11 +44,12 @@ struct ErrorHandle CreateInstance(Program *ProgramState) {
             },
             .enabledExtensionCount = ExtensionsNumber,
             .ppEnabledExtensionNames = RequiredExtensions,
-            .enabledLayerCount = 1,
-            .ppEnabledLayerNames = ValidationLayers,
+            .enabledLayerCount = validationLayer.LayersNumber,
+            .ppEnabledLayerNames = validationLayer.LayerNames
         },
         ProgramState->Allocator, 
         &ProgramState->initialize.Instance);
+
     if(Result != VK_SUCCESS) 
     {Error("Failed to Create Instance", Result);}
     return (struct ErrorHandle){"Success"};
