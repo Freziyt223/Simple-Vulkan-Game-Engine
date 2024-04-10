@@ -1,4 +1,3 @@
-<title>HEAT Edgine</title>
 # Ukrainian variant
 - [English Variant](#english-variant)
 ## Зміст
